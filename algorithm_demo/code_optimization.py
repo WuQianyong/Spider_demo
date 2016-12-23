@@ -12,11 +12,8 @@ list = dict.fromkeys(list,True)
 print(list)
 filter = []
 for i in range (1000000):
- for find in ['is','hat','new','list','old','.']:
-     if find not in list:
-         filter.append(find)
+    for find in ['is','hat','new','list','old','.']:
+        if find not in list:
+            filter.append(find)
 print("total run time:")
 print (time()-t)
-
-
-
