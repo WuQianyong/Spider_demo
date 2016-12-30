@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-将 数据到导入 sql server
+将 盈利预测数据到导入 sql server
 Created on Wed Dec 28 13:15:31 2016
 
 @author: wqy
@@ -35,11 +35,11 @@ def insert_sql(indata):
     插入sql
     """
     insert_sql = ('insert into T_FinancialPredict (REPORTCODE,'
-                  'STOCKCODE,PERIODDATE,INDATE,TFPF0001,TFPF0020,'
+                  'STOCKCODE,PERIODDATE,INDATE,TFPF0001,'
                   'TFPF0024,TFPF0016,msrepl_tran_version)'
                   'values(\'{}\',\'{}\',\'{}\','
-                  'getdate(),{},{},{},{},Newid())'.format(
-                      indata[0], indata[1], indata[2], indata[3], indata[4],
+                  'getdate(),{},{},{},Newid())'.format(
+                      indata[0], indata[1], indata[2], indata[3],
                       indata[5], indata[6]))
     return insert_sql
 
@@ -49,10 +49,9 @@ def update_sql(indata):
     更新sql
     """
     update_sql = ('update T_FinancialPredict  set INDATE=getdate(),'
-                  'TFPF0001={},TFPF0020={},TFPF0024 = {},TFPF0016={}'
+                  'TFPF0001={},TFPF0024 = {},TFPF0016={}'
                   ' where REPORTCODE=\'{}\' and STOCKCODE = \'{}\''
                   'and PERIODDATE=\'{}\''.format(indata[3],
-                                                 indata[4],
                                                  indata[5],
                                                  indata[6],
                                                  indata[0],
@@ -70,10 +69,10 @@ MS = {
 
 # 数据输出信息
 MS1 = {
-    'host': '127.0.0.1',    # 数据库位置
-    'user': 'root',          # 用户名
-    'password': '123456',  # 密码
-    'db': 'vsatTemp'         # 数据库名
+    'host': '192.168.1.190',    # 数据库位置
+    'user': 'sa',          # 用户名
+    'password': 'select*fromvsat',  # 密码
+    'db': 'VSATREPORT'         # 数据库名
 }
 
 conn = pymssql.connect(host=MS.get('host'),
@@ -127,8 +126,8 @@ flag = 0
 
 # 研究报告编码（T_ReportFellow）
 for x in range(len(ws)):
-#for x in range(200):
-    if flag == 100:
+# for x in range(200):
+    if flag == 300:
         conn.close()
         conn1.close()
         conn = pymssql.connect(host=MS.get('host'),

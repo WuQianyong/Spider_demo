@@ -15,6 +15,7 @@ def get_select(one_dict):
     """
     通过数据连接，获得获得  研究报告编码（T_ReportFellow）
     """
+
     select_sql = ('select reportCode from T_ReportStock  where '
                   'stockcode = \'{code}\' and reportcode in (SELECT '
                   ' reportcode FROM  T_ReportFellow where fellowcode'
@@ -29,7 +30,58 @@ def get_select(one_dict):
                       date=one_dict.get('ycrq')))
     return select_sql
 
+def insert_sql(indata):
+    """
+    插入sql
+    """
+    if '至' not in str(indata[3]):
+        insert_sql = ('insert into T_StockPredict (REPORTCODE,'
+                      'STOCKCODE,PERIODDATE,INDATE,PREDICTPRICE'
+                      ',msrepl_tran_version)'
+                      'values(\'{}\',\'{}\',\'{}\','
+                      'getdate(),{},Newid())'.format(
+                          indata[0], indata[1], indata[2], indata[3]))
+    else:
 
+        min = indata[3].split('至')[0]
+        max = indata[3].split('至')[1]
+        insert_sql = ('insert into T_StockPredict (REPORTCODE,'
+                      'STOCKCODE,PERIODDATE,INDATE,PREDICTMAXPRICE'
+                      ',PREDICTMINPRICE,msrepl_tran_version)'
+                      'values(\'{}\',\'{}\',\'{}\','
+                      'getdate(),{},{},Newid())'.format(
+            indata[0], indata[1], indata[2], max,min))
+
+
+    return insert_sql
+
+
+def update_sql(indata):
+    """
+    更新sql
+    """
+    # print(indata)
+    if '至' not in str(indata[3]):
+        update_sql = ('update T_StockPredict set INDATE=getdate(),'
+                      'PREDICTPRICE={}, PREDICTMAXPRICE={}, PREDICTMINPRICE={}'
+                      ' where REPORTCODE=\'{}\' and STOCKCODE = \'{}\''
+                      'and PERIODDATE=\'{}\''.format(indata[3],'Null', 'Null',
+                                                     indata[0],
+                                                     indata[1],
+                                                     indata[2]))
+    else:
+
+        min = indata[3].split('至')[0]
+        max = indata[3].split('至')[1]
+        update_sql = ('update T_StockPredict set INDATE=getdate(),'
+                      'PREDICTPRICE={},PREDICTMAXPRICE={}, PREDICTMINPRICE={}'
+                      ' where REPORTCODE=\'{}\' and STOCKCODE = \'{}\''
+                      'and PERIODDATE=\'{}\''.format('Null',max,min,
+                                                     indata[0],
+                                                     indata[1],
+                                                     indata[2]))
+
+    return update_sql
 # 查询 的数据库信息
 MS = {
     'host': '192.168.1.182',    # 数据库位置
@@ -41,11 +93,19 @@ MS = {
 
 # 数据输出信息
 MS1 = {
-    'host': '127.0.0.1',    # 数据库位置
-    'user': 'root',          # 用户名
-    'password': '123456',  # 密码
-    'db': 'vsatTemp'         # 数据库名
+    'host': '192.168.1.190',    # 数据库位置
+    'user': 'sa',          # 用户名
+    'password': 'select*fromvsat',  # 密码
+    'db': 'VSATREPORT'         # 数据库名
 }
+
+# 数据输出信息
+# MS1 = {
+#     'host': '127.0.0.1',    # 数据库位置
+#     'user': 'root',          # 用户名
+#     'password': '123456',  # 密码
+#     'db': 'vsatTemp'         # 数据库名
+# }
 
 conn = pymssql.connect(host=MS.get('host'),
                                user=MS.get('user'),
@@ -88,9 +148,9 @@ log_data = {'debug': 0,
 flag = 0
 
 # 研究报告编码（T_ReportFellow）
-#for x in range(len(ws)):
-for x in range(200):
-    if flag == 100:
+for x in range(len(ws)):
+# for x in range(30):
+    if flag == 300:
         conn.close()
         conn1.close()
         conn = pymssql.connect(host=MS.get('host'),
@@ -139,58 +199,63 @@ for x in range(200):
             indata = [
                 yjbgbm,
                 one_item.get('code'),
-                '{}-12-31'.format(year),
+                '2016-12-31',
                 one_item.get(
-                    '{}Ezyywsr'.format(year)),
-                one_item.get(
-                    '{}Esyl'.format(year)),
-                one_item.get(
-                    '{}Egsmgsjlr'.format(year)),
-                one_item.get(
-                    '{}Emgsy'.format(year))]
+                    'mbjw')]
+            # print(indata)
 
             # 判断是否插入还是更新
             select1 = (
-                'select * from  T_FinancialPredict where REPORTCODE='
+                'select * from  T_StockPredict where REPORTCODE='
                 ' \'{}\' and STOCKCODE=\'{}\' and PERIODDATE=\'{}\''.format(
-                    yjbgbm, indata[1], '{}-12-31'.format(year)))
+                    yjbgbm, indata[1], '2016-12-31'))
             cour1.execute(select1)
             jieguo1 = cour1.fetchall()
+            # print(jieguo1)
             if len(jieguo1) == 1:
+
                 print(
                     '{code} {year} {name} 需要更新 '.format(
                         code=one_item.get('code'),
-                        year=year,
+                        year='2016',
                         name=one_item.get('research')))
                 update_list.append(indata)
                 upd_sql = update_sql(indata)
-                try:
-                    cour1.execute(upd_sql)
-                    conn1.commit()
-                except Exception as e:
-                    print(e)
-                    conn1.rollback()
-
+                if upd_sql ==None:
+                    continue
+                else:
+                    # print(upd_sql)
+                    try:
+                        cour1.execute(upd_sql)
+                        conn1.commit()
+                    except Exception as e:
+                        print(e)
+                        conn1.rollback()
+                #
             elif len(jieguo1) == 0:
                 print(
                     '{code} {year} {name} 需要插入 '.format(
                         code=one_item.get('code'),
-                        year=year,
+                        year=2016,
                         name=one_item.get('research')))
                 insert_list.append(indata)
                 ins_sql = insert_sql(indata)
-                try:
-                    cour1.execute(ins_sql)
-                    conn1.commit()
-                except Exception as e:
-                    print(e)
-                    conn1.rollback()
+                if ins_sql==None:
+                    continue
+                else:
+                    # print(ins_sql)
+                    try:
+                        cour1.execute(ins_sql)
+                        conn1.commit()
+                    except Exception as e:
+                        print(e)
+                        conn1.rollback()
 
             else:
                 print(
                     '{code} {year} {name} 存在多个报告编码 '.format(
                         code=one_item.get('code'),
-                        year=year,
+                        year='2016',
                         name=one_item.get('research')))
                 deal_error_list.append(indata)
 
@@ -207,5 +272,26 @@ for x in range(200):
                     code=one_item.get('code'),
                     name=one_item.get('research')))
 
+
+
+# 输出程序结果
+print('查询研究报告成功次数: {}'.format(len(all_data)))
+print('查询研究报告记录为0: {}'.format(log_data['error0']))
+print('查询研究报告记录矛盾: {} \n'.format(log_data['error1']))
+
+print('数据更新次数: {}'.format(len(update_list)))
+print('数据插入次数: {}'.format(len(insert_list)))
+print('数据操作失败次数: {}'.format(len(deal_error_list)))
+
+df_deal_error = pd.DataFrame(deal_error_list)       # 导出库 存在多个报告编码
+df_error1 = pd.DataFrame(error1_list)               # 查询 多条记录
+df_error0 = pd.DataFrame(error0_list)               # 找不到记录
+
+writer = ExcelWriter('data/mbjerror.xlsx')
+
+df_deal_error.to_excel(writer, '导出出错记录', index=False)
+df_error1.to_excel(writer, '多个编码', index=False)
+df_error0.to_excel(writer, '没有编码', index=False)
+writer.save()
 
 
