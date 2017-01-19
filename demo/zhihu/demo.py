@@ -73,8 +73,11 @@ def get_captcha():
 
 def isLogin():
     # 通过查看用户个人信息来判断是否已经登录
-    url = "https://www.zhihu.com/settings/profile"
-    login_code = session.get(url, headers=headers, allow_redirects=False).status_code
+    url = "https://www.zhihu.com/api/v4/members/wu-qian-yong/followees?include=data%5B*%5D.answer_count%2Carticles_count%2Cfollower_count%2Cis_followed%2Cis_following%2Cbadge%5B%3F(type%3Dbest_answerer)%5D.topics&offset=20&limit=20"
+    req = session.get(url, headers=headers, allow_redirects=False)
+    login_code = req.status_code
+
+    print(req.content.decode('ascii','ignore'))
     if login_code == 200:
         return True
     else:
@@ -123,6 +126,7 @@ def login(secret, account):
 if __name__ == '__main__':
     if isLogin():
         print('您已经登录')
+
     else:
         account = input('请输入你的用户名\n>  ')
         secret = input("请输入你的密码\n>  ")
