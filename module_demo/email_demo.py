@@ -24,13 +24,15 @@ from email.header import Header
 from email.mime.multipart import  MIMEMultipart
 msg=MIMEMultipart()
 
-fil = '壁纸1.jpg'
 
-msg['Subject'] = '介绍'
-msg['From']='Python<wuqianyong1995@163.com>'
-msg['To']='小吴同志<1060591592@qq.com>'
-msg.attach(MIMEText('<html><body><h1>Hello</h1>' +
-    '<p>send by <a href="http://www.python.org">Python</a>...</p>' +
+fil = '壁纸1.png'
+
+msg['Subject'] = Header('Python 发送邮件','utf-8').encode()
+msg['From'] = 'Allen<wuqianyong1995@163.com>'
+msg['To'] = 'wuqianyong_qq<1060591592@qq.com>'
+msg.attach(MIMEText('<html><body><h1>发送附件</h1>' +
+    '<p>不用谢哦~注意一下联系方式的更新，如果座机打不通的话就打那个移动号码哦~谢谢~<a href="http://www.python.org">Python</a>...</p>' +
+    '<p><img  src="cid:0"></p>'+
     '</body></html>', 'html', 'utf-8'))
 # 添加一个附件 就是添加一个MIMEBASE 从本地读取一个图片
 from email.mime.base import MIMEBase
