@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Spider_demo.iml" filepath="$PROJECT_DIR$/.idea/Spider_demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../Python/sourceCode/THULAC-Python/.idea/THULAC-Python.iml" filepath="$PROJECT_DIR$/../../Python/sourceCode/THULAC-Python/.idea/THULAC-Python.iml" />
     </modules>
   </component>
 </project>
